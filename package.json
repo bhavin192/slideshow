@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/pixelsplurge/slideshow/issues"
   },
-  "homepage": "https://github.com/pixelsplurge/slideshow#readme"
+  "homepage": "https://github.com/pixelsplurge/slideshow#readme",
+  "dependencies": {
+    "socket.io": "^2.1.0"
+  }
 }
