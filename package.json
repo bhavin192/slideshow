@@ -1,0 +1,22 @@
+{
+  "name": "slideshow",
+  "version": "1.0.0",
+  "description": "slideshow",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pixelsplurge/slideshow.git"
+  },
+  "keywords": [
+    "slideshow"
+  ],
+  "author": "pixelsplurge",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/pixelsplurge/slideshow/issues"
+  },
+  "homepage": "https://github.com/pixelsplurge/slideshow#readme"
+}
