@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Slideshow</title>
+
+  <script src="jquery-1.12.4.js"></script>
+  <script src="jquery-ui.js"></script>
+  <script src="http://localhost:8000/socket.io/socket.io.js"></script>
+  <script>
+    $(document).ready(function() {
+      var socket = io.connect("http://localhost:8000");
+      var nextEq = 0;
+      var slideTimer;
+      var slideTimer2;
+      var activeId = "";
+      var zoomCount = 0;
+      var setTimeoutFunc1;
+      var zoomCount = 0;
+      var viewPic = 1; //false
+
+      $("#sortable").sortable();
+      $("#sortable .newDiv").draggable();
+
+      $("#sortable").disableSelection();
+
+      socket.on("slideData", function(data) {
+        uri_uriKey = data.dataImg;
+        uri_dir = data.dir;
+
+        function newDivFunction(item, index) {
+          var newImgPath = item.uri;
+          var newDiv = document.createElement("div");
+          newDiv.setAttribute("style", "background-image: url(" + data.dir + newImgPath + ")");
+          newDiv.setAttribute("id", item.uriKey);
+          newDiv.className = "newDiv ui-widget-content";
+          document.getElementById("sortable").appendChild(newDiv);
+        } //newDivFunction
+        data.dataImg.forEach(newDivFunction);
+
+        function toggleFullScreen() {
+          if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+            $("#full").attr("src", "icons/icons-fullscreen-exit.png");
+            $("#full").attr("title", "fullscreen exit");
+            if (document.documentElement.requestFullscreen) {
+              document.documentElement.requestFullscreen();
+            } else if (document.documentElement.msRequestFullscreen) {
+              document.documentElement.msRequestFullscreen();
+            } else if (document.documentElement.mozRequestFullScreen) {
+              document.documentElement.mozRequestFullScreen();
+            } else if (document.documentElement.webkitRequestFullscreen) {
+              document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+            }
+          } else {
+            $("#full").attr("src", "icons/icons-fullscreen.png");
+            $("#full").attr("title", "fullscreen");
+            if (document.exitFullscreen) {
+              document.exitFullscreen();
+            } else if (document.msExitFullscreen) {
+              document.msExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+              document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+              document.webkitExitFullscreen();
+            }
+          }
+        }
+
+        function slideShow() {
+          $("#sortable .newDiv").fadeTo(250, 0);
+          $("#sortable .newDiv").hide();
+          nextEq += 1;
+
+          $("#sortable .newDiv").eq(nextEq).fadeTo(500, 1.0);
+          if ($("#sortable div").last().index() == nextEq) {
+            nextEq = -1;
+          }
+
+        }
+        $(document).on("click", "#play", function() {
+          $("#sortable .newDiv").hide();
+          $(".menuPic").hide();
+          $("#sortable .newDiv").css({
+            "width": "100%",
+            "height": "100vh",
+            "position": "absolute",
+            "left": "0px",
+            "top": "0px",
+            "margin": "0"
+          });
+          jQuery("#play").attr("src", "icons/icons-pause.png");
+          jQuery("#play").attr("id", "pause");
+          slideTimer = setInterval(slideShow, 3000);
+          $("#sortable .newDiv").eq(nextEq).fadeTo(500, 1.0);
+        }); //play
+
+        $(document).on("click", "#pause", function() {
+          clearInterval(slideTimer);
+          clearInterval(slideTimer2);
+          viewPic = 0; //true
+          zoomCount = 0;
+          jQuery(this).attr("id", "resume");
+          jQuery(this).attr("src", "icons/icons-play.png");
+          $(".menuPic").show();
+          activeId = $("#sortable .newDiv").eq(nextEq).attr("id");
+        }); //pause
+
+        $(document).on("click", "#resume", function() {
+          $(".menuPic").hide();
+          jQuery(this).attr("id", "pause");
+          jQuery(this).attr("src", "icons/icons-pause.png");
+
+          $("#sortable .newDiv").css({
+            "width": "100%",
+            "height": "100vh",
+            "position": "absolute",
+            "left": "0px",
+            "top": "0px",
+            "margin": "0"
+          });
+          slideTimer2 = setInterval(slideShow, 3000);
+        });
+        $(document).on("click", "#stop", function() {
+          viewPic = 1; //false
+          clearInterval(slideTimer);
+          clearInterval(slideTimer2);
+          $(".menuPic").hide();
+          nextEq = 0;
+
+          $("#sortable .newDiv").css({
+            "width": "200px",
+            "height": "200px",
+            "position": "relative",
+            "left": "0px",
+            "top": "0px",
+            "margin": "1",
+            "display": "inline"
+          });
+          jQuery(".playClass").attr("id", "play");
+          jQuery(".playClass").attr("src", "icons/icons-play.png");
+          $("#sortable .newDiv").fadeTo(250, 0);
+          $("#sortable .newDiv").fadeTo(500, 1.0);
+
+        }); //stop
+
+        $(document).on("click", ".newDiv", function() {
+          nextEq = $(this).index();
+          console.log("nextEq : " + JSON.stringify(nextEq, null, 2));
+          viewPic = 0;
+          zoomCount = 0;
+
+          if ($(this).is(":first-child")) {
+            $("#prevPic").css("opacity", "0.5");
+          } else {
+            $("#prevPic").css("opacity", "1");
+          }
+          if ($(this).is(":last-child")) {
+            $("#nextPic").css("opacity", "0.5");
+          } else {
+            $("#nextPic").css("opacity", "1");
+          }
+          $("#sortable").children().hide();
+          $("#sortable .newDiv").eq(nextEq).css({
+            "width": "100%",
+            "height": "100vh",
+            "position": "absolute",
+            "left": "0px",
+            "top": "0px",
+            "margin": "0"
+          });
+
+          activeId = $("#sortable .newDiv").eq(nextEq).attr("id");
+          $("#sortable .newDiv").fadeTo(250, 0);
+          $("#sortable .newDiv").hide();
+          $("#" + activeId).fadeTo(500, 1.0);
+          $(".menuPic").show();
+          clearInterval(slideTimer);
+          clearInterval(slideTimer2);
+          jQuery(".playClass").attr("id", "resume");
+          jQuery(".playClass").attr("src", "icons/icons-play.png");
+        }); //newDiv
+
+        $(document).on("click", "#zoomIn", function() {
+          if (zoomCount < 7) {
+            zoomCount += 1;
+            if (zoomCount == 0) {
+              $("#" + activeId).trigger("click");
+            } else {
+              var divWidth = $("#" + activeId).width();
+              var divHeight = $("#" + activeId).height();
+              $("#" + activeId).css({
+                "width": divWidth * 1.25,
+                "height": divHeight * 1.25
+              });
+              if (($("#" + activeId).width()) < ($(window).width())) {
+                $("#" + activeId).css({
+                  "margin-left": (($(window).width()) - ($("#" + activeId).width())) / 2
+                });
+              }
+              if (($("#" + activeId).height()) < ($(window).height())) {
+                $("#" + activeId).css({
+                  "margin-top": (($(window).height()) - ($("#" + activeId).height())) / 2
+                });
+              }
+            }
+            if (($("#" + activeId).width()) > ($(window).width())) {
+              var scrollCentreWidth = ($("#" + activeId).width() - $(window).width()) / 2;
+              $("html, body").animate({
+                scrollLeft: scrollCentreWidth + "px"
+              }, 1);
+            }
+            if (($("#" + activeId).height()) > ($(window).height())) {
+              var scrollCentre = ($("#" + activeId).height() - $(window).height()) / 2;
+              $("html, body").animate({
+                scrollTop: scrollCentre + "px"
+              }, 1);
+            }
+          }
+        });
+        $(document).on("click", "#zoomNormal", function() {
+          $("#" + activeId).trigger("click");
+          zoomCount = 0;
+        });
+        $(document).on("click", "#zoomOut", function() {
+          if (zoomCount > -7) {
+            zoomCount += -1;
+            if (zoomCount == 0) {
+              $("#" + activeId).trigger("click");
+            } else {
+              var divWidth = $("#" + activeId).width();
+              var divHeight = $("#" + activeId).height();
+              $("#" + activeId).css({
+                "width": divWidth / 1.25,
+                "height": divHeight / 1.25
+              });
+              if (($("#" + activeId).width()) < ($(window).width())) {
+                $("#" + activeId).css({
+                  "margin-left": (($(window).width()) - ($("#" + activeId).width())) / 2
+                });
+              }
+              if (($("#" + activeId).height()) < ($(window).height())) {
+                $("#" + activeId).css({
+                  "margin-top": (($(window).height()) - ($("#" + activeId).height())) / 2
+                });
+              }
+            }
+            if (($("#" + activeId).width()) > ($(window).width())) {
+              var scrollCentreWidth = ($("#" + activeId).width() - $(window).width()) / 2;
+              $("html, body").animate({
+                scrollLeft: scrollCentreWidth + "px"
+              }, 1);
+            }
+            if (($("#" + activeId).height()) > ($(window).height())) {
+              var scrollCentre = ($("#" + activeId).height() - $(window).height()) / 2;
+              $("html, body").animate({
+                scrollTop: scrollCentre + "px"
+              }, 1);
+            }
+          }
+        });
+        $(document).on("click", "#nextPic", function() {
+
+          $("#" + activeId).next().trigger("click");
+        });
+        $(document).on("click", "#prevPic", function() {
+          $("#" + activeId).prev().trigger("click");
+        });
+        $(document).on("mousemove", function() {
+          clearTimeout(setTimeoutFunc1);
+          $("#menu").fadeIn(500);
+          if (mouseOver == 1) {
+            setTimeoutFunc1 = setTimeout(function() {
+              $("#menu").hide();
+            }, 5000);
+          }
+        });
+        $("#menu").on("mouseover", function() {
+          mouseOver = 0;
+          clearTimeout(setTimeoutFunc1);
+          $("#menu").fadeIn(500);
+        });
+        $("#menu").on("mouseout", function() {
+          mouseOver = 1;
+        });
+
+        $(document).on("click", "#full", function() {
+          toggleFullScreen();
+        }); //full
+      }); //io
+    }); //ready
+  </script>
+
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      background-color: #000;
+    }
+
+    body::-webkit-scrollbar {
+      width: 20px;
+      height: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      color: #3399ff;
+      border: 1px solid #3399ff;
+      border-radius: 10px;
+
+    }
+
+    body::-webkit-scrollbar-thumb {
+      background: #3399ff;
+      border-radius: 10px;
+      color: #3399ff;
+      opacity: 0.5;
+      min-height: 30px;
+
+    }
+
+    ::-webkit-scrollbar-thumb:active {
+      background: #3399ff;
+      border-radius: 10px;
+      color: #3399ff;
+      opacity: 1;
+    }
+
+    #sortable {
+      width: 100%;
+      visibility: visible;
+      position: absolute;
+      top: 0;
+      z-index: 10;
+      background-color: #000;
+      margin: 0;
+      padding: 0;
+    }
+
+    .newDiv {
+      width: 200px;
+      height: 200px;
+      background-repeat: no-repeat;
+      background-color: #000;
+      background-position: center;
+      background-size: contain;
+      float: left;
+      margin: 1px;
+      box-shadow: 0px 0px 1px #39f;
+    }
+
+    #menu {
+      visibility: visible;
+      z-index: 100;
+      position: fixed;
+      top: 0;
+      background: rgba(0, 0, 0, 0.6);
+      width: 100%;
+      height: 64px;
+
+    }
+
+
+    .menuMain {
+      display: inline;
+    }
+
+    .menuPic {
+      display: none;
+    }
+
+    #full {
+      float: right;
+    }
+
+  </style>
+</head>
+
+<body>
+  <div id="menu">
+    <img id="play" class="menuMain playClass" title="play" src="icons/icons-play.png" />
+    <img id="stop" class="menuMain" title="stop" src="icons/stop.png" />
+    <img id="zoomIn" class="menuPic" title="zoom in" src="icons/icons-zoom-in.png" />
+    <img id="zoomNormal" class="menuPic" title="zoom normal" src="icons/icons-zoom-normal.png" />
+    <img id="zoomOut" class="menuPic" title="zoom out" src="icons/icons-zoom-out.png" />
+    <img id="prevPic" class="menuPic" title="prev pic" src="icons/icons-prev.png" />
+    <img id="nextPic" class="menuPic" title="next pic" src="icons/icons-next.png" />
+    <img id="full" title="fullscreen" src="icons/icons-fullscreen.png" />
+  </div>
+  <div id="sortable">
+  </div>
+
+</body>
+
+</html>
