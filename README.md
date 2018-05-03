@@ -5,9 +5,23 @@ Slideshow and individual image viewer, with sortable and zoom facility.
 
 To run example:
 
-node index.js
+git clone https://github.com/pixelsplurge/slideshow.git
 
-From where index.js resides.
+or download and unzip:
+
+https://github.com/pixelsplurge/slideshow/archive/master.zip
+
+navagate to location of app directory eg:
+
+cd /home/user/slideshow/
+
+run:
+
+npm install
+
+to install dependencies, then run:
+
+node index.js
 
 Then open URI of index.html in browser, eg:
 
@@ -23,7 +37,7 @@ To the directory of your images, or simply add/replace images in the slides/ sub
 
 ## HowTo
 
-Drag sortable thumbnails.
+Drag sortable thumbnails to organize sequence of slideshow.
 
 Click play icon.
 
