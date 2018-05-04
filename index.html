@@ -11,6 +11,7 @@
   <script>
     $(document).ready(function() {
       var socket = io.connect("http://localhost:8000");
+      var defaultDelay = 3000; //3sec
       var nextEq = 0;
       var slideTimer;
       var slideTimer2;
@@ -68,16 +69,16 @@
         }
 
         function slideShow() {
-          $("#sortable .newDiv").fadeTo(250, 0);
-          $("#sortable .newDiv").hide();
           nextEq += 1;
 
-          $("#sortable .newDiv").eq(nextEq).fadeTo(500, 1.0);
-          if ($("#sortable div").last().index() == nextEq) {
-            nextEq = -1;
+          if (nextEq > $("#sortable div").last().index()) {
+            nextEq = 0;
           }
-
+          $("#sortable .newDiv").fadeTo(250, 0);
+          $("#sortable .newDiv").hide();
+          $("#sortable .newDiv").eq(nextEq).fadeTo(500, 1.0);
         }
+
         $(document).on("click", "#play", function() {
           $("#sortable .newDiv").hide();
           $(".menuPic").hide();
@@ -91,7 +92,7 @@
           });
           jQuery("#play").attr("src", "icons/icons-pause.png");
           jQuery("#play").attr("id", "pause");
-          slideTimer = setInterval(slideShow, 3000);
+          slideTimer = setInterval(slideShow, defaultDelay);
           $("#sortable .newDiv").eq(nextEq).fadeTo(500, 1.0);
         }); //play
 
@@ -119,8 +120,9 @@
             "top": "0px",
             "margin": "0"
           });
-          slideTimer2 = setInterval(slideShow, 3000);
+          slideTimer2 = setInterval(slideShow, defaultDelay);
         });
+
         $(document).on("click", "#stop", function() {
           viewPic = 1; //false
           clearInterval(slideTimer);
@@ -146,7 +148,6 @@
 
         $(document).on("click", ".newDiv", function() {
           nextEq = $(this).index();
-          console.log("nextEq : " + JSON.stringify(nextEq, null, 2));
           viewPic = 0;
           zoomCount = 0;
 
@@ -371,7 +372,6 @@
     #full {
       float: right;
     }
-
   </style>
 </head>
 

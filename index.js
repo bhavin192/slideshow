@@ -2,6 +2,7 @@ var io = require('socket.io').listen(8000);
 var fs = require('fs');
 var path = require("path");
 var slidesObj = [];
+var defaultDelay = 3000;//3sec
 
 var slidesDir = "/home/user/slideshow/slides/";
 
