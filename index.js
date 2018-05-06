@@ -16,7 +16,8 @@ function readImg() {
       var key = hex;
       var data = {
         uri: file,
-        uriKey: key
+        uriKey: key,
+        uriDelay: defaultDelay
       };
       if (extName == ".png" || extName == ".jpg" || extName == ".jpeg" || extName == ".svg" || extName == ".bmp" || extName == ".gif") {
         slidesObj.push(data);
@@ -30,6 +31,27 @@ io.sockets.on('connection', function(socket) {
   socket.emit("slideData", {
     "dataImg": slidesObj,
     "dir": slidesDir,
-    "delay": defaultDelay
+    "delayGlobal": defaultDelay
   });
+      socket.on("saveData", function(data) {
+		  console.log("data : "+JSON.stringify(data  , null, 2));
+fs.writeFile(slidesDir+"settingSave", data, function(err) {
+    if(err) {
+        return console.log(err);
+    }
+    console.log("The file was saved!");
+});
+});
+      socket.on("readData", function() {
+fs.readFile(slidesDir+"settingSave", {encoding: 'utf-8'}, function(err,data) {
+    if(err) {
+        return console.log(err);
+    }
+    
+      socket.emit("readDataSend", data);		  
+    console.log("The file was read!");
+    console.log('received data: ' + data);
+});
+
+});
 });

@@ -30,9 +30,10 @@
       $("#sortable").disableSelection();
 
       socket.on("slideData", function(data) {
+		  console.log("data : "+JSON.stringify(data  , null, 2));
         uri_uriKey = data.dataImg;
         uri_dir = data.dir;
-        defaultDelay = data.delay;
+        defaultDelay = data.delayGlobal;
 
         function newDivFunction(item, index) {
           var newImgPath = item.uri;
@@ -301,6 +302,20 @@
         $(document).on("click", "#full", function() {
           toggleFullScreen();
         }); //full
+        
+ var slidesObjNew = [];       
+        $(document).on("click", "#openFile", function() {
+      socket.emit("readData");		  
+});
+
+      socket.on("readDataSend", function(data) {
+$('#sortable').html(data);
+});
+        $(document).on("click", "#saveFile", function() {
+var sortHtml = $('#sortable').html();
+socket.emit("saveData", sortHtml);
+
+        }); //save
 
         $(document).on("mouseup", "#addCount", function() {
           clearInterval(timerInc);
@@ -492,9 +507,13 @@
         <div class="delayCount"><img id="minusCount" src="icons/icons-minus.png" /></div>
       </div>
     </div>
+    <img id="openFile" class="menuPic" title="open file" src="icons/icons-open.png" />
+    <img id="saveFile" class="menuPic" title="save file" src="icons/icons-save.png" />
     <img id="full" title="fullscreen" src="icons/icons-fullscreen.png" />
   </div>
   <div id="sortable">
+  </div>
+  <div id="sortable2">sortable2
   </div>
 
 </body>
