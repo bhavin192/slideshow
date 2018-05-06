@@ -17,7 +17,7 @@ cd /home/user/slideshow/
 ```
 Windows eg:
 ```sh
-C:\Users\User 1\slideshow\
+cd C:\Users\User 1\slideshow\
 ```
 to install dependencies, run:
 ```sh
@@ -27,10 +27,10 @@ then:
 ```sh
 node index.js
 ```
-Then open URI of index.html in browser, eg:
+Then open URI of index.html in browser, Linux eg:
 
 ```sh
-file:///home/user/slideshow/index.html
+/home/user/slideshow/index.html
 ```
 Windows eg:
 ```sh
@@ -66,6 +66,6 @@ Click play icon to resume.
 
 Click stop icon to return to sortable thumbs.
 		
-##Todo
+## Todo
 
 Save customise delay and sort order. 
