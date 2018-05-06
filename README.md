@@ -1,4 +1,4 @@
-# Slideshow (alpha development phase, testing on Fedora 27 (tm) ).
+# Slideshow (alpha development phase, testing on Fedora 27 (tm) && Windows 7 (tm)).
 Slideshow and individual image viewer, with sortable and zoom facility.
 
 ## Config
@@ -15,11 +15,15 @@ navagate to location of app directory eg:
 ```sh
 cd /home/user/slideshow/
 ```
-run:
+Windows eg:
+```sh
+C:\Users\User 1\slideshow\
+```
+to install dependencies, run:
 ```sh
 npm install
 ```
-to install dependencies, then run:
+then:
 ```sh
 node index.js
 ```
@@ -28,15 +32,29 @@ Then open URI of index.html in browser, eg:
 ```sh
 file:///home/user/slideshow/index.html
 ```
+Windows eg:
+```sh
+C:\Users\User 1\slideshow\index.html
+```
 NB not URL http://...
 
-To display your images, edit index.js:
+To display your images, create new sub-directory and paste images and edit index.js, eg:
 ```js
-var slidesDir = "/home/user/slideshow/slides/";
+var slidesDir = "slides2/";
 ```
-To the directory of your images, or simply add/replace images in the slides/ sub-directory.
+
+To change global delay of slides edit:
+```js
+var defaultDelay = 3; //sec
+```
+
+Individual slide delays can be set by clicking images and making adjustments in menu.
+
+
 
 ## HowTo
+
+Socket.io automatically reads directory and displays thumbnails of type: png, jpeg, jpg, gif, bmp and svg.
 
 Drag sortable thumbnails to organize sequence of slideshow.
 
@@ -48,4 +66,6 @@ Click play icon to resume.
 
 Click stop icon to return to sortable thumbs.
 		
+##Todo
 
+Save customise delay and sort order. 
