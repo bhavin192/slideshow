@@ -4,7 +4,8 @@
 <head>
   <meta charset="utf-8">
   <title>Slideshow</title>
-  <link rel="icon" href="favicon.ico" type="image/x-icon" />  <script src="jquery-1.12.4.js"></script>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <script src="jquery-1.12.4.js"></script>
   <script src="jquery-ui.js"></script>
   <script src="http://localhost:8000/socket.io/socket.io.js"></script>
   <script>
@@ -26,11 +27,9 @@
       var mouseD = 1;
       $("#sortable").sortable();
       $("#sortable .newDiv").draggable();
-
       $("#sortable").disableSelection();
 
       socket.on("slideData", function(data) {
-		  console.log("data : "+JSON.stringify(data  , null, 2));
         uri_uriKey = data.dataImg;
         uri_dir = data.dir;
         defaultDelay = data.delayGlobal;
@@ -80,7 +79,6 @@
             if (nextEq > $("#sortable div").last().index()) {
               nextEq = -1;
             }
-            //          nextEq = nextE;
             $("#sortable .newDiv").fadeTo(250, 0);
             $("#sortable .newDiv").hide();
             $("#sortable .newDiv").eq(nextEq).fadeTo(500, 1.0);
@@ -302,25 +300,25 @@
         $(document).on("click", "#full", function() {
           toggleFullScreen();
         }); //full
-        
- var slidesObjNew = [];       
+
         $(document).on("click", "#openFile", function() {
-      socket.emit("readData");		  
-});
+          socket.emit("readData");
+        });
 
-      socket.on("readDataSend", function(data) {
-$('#sortable').html(data);
-});
+        socket.on("readDataSend", function(data) {
+          $('#sortable').html(data);
+        });
+
         $(document).on("click", "#saveFile", function() {
-var sortHtml = $('#sortable').html();
-socket.emit("saveData", sortHtml);
-
+          var sortHtml = $('#sortable').html();
+          socket.emit("saveData", sortHtml);
         }); //save
 
         $(document).on("mouseup", "#addCount", function() {
           clearInterval(timerInc);
           mouseD = 1;
         });
+
         $(document).on("mouseup", "#minusCount", function() {
           clearInterval(timerDec);
           mouseD = 1;
@@ -332,7 +330,6 @@ socket.emit("saveData", sortHtml);
 
         $(document).on("mousedown", "#addCount", function() {
           mouseD = 0;
-          //increment();
           clearInterval(timerInc);
           document.querySelector("#delayCountTxt").stepUp();
           timerInc = setInterval(function() {
@@ -349,7 +346,6 @@ socket.emit("saveData", sortHtml);
 
         $(document).on("mousedown", "#minusCount", function() {
           mouseD = 0;
-          //increment();
           clearInterval(timerDec);
           document.querySelector("#delayCountTxt").stepDown();
           timerDec = setInterval(function() {

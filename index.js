@@ -33,25 +33,24 @@ io.sockets.on('connection', function(socket) {
     "dir": slidesDir,
     "delayGlobal": defaultDelay
   });
-      socket.on("saveData", function(data) {
-		  console.log("data : "+JSON.stringify(data  , null, 2));
-fs.writeFile(slidesDir+"settingSave", data, function(err) {
-    if(err) {
+  
+  socket.on("saveData", function(data) {
+    fs.writeFile(slidesDir + "settingSave", data, function(err) {
+      if (err) {
         return console.log(err);
-    }
-    console.log("The file was saved!");
-});
-});
-      socket.on("readData", function() {
-fs.readFile(slidesDir+"settingSave", {encoding: 'utf-8'}, function(err,data) {
-    if(err) {
-        return console.log(err);
-    }
-    
-      socket.emit("readDataSend", data);		  
-    console.log("The file was read!");
-    console.log('received data: ' + data);
-});
+      }
+      console.log("The file was saved!");
+    });
+  });
 
-});
+  socket.on("readData", function() {
+    fs.readFile(slidesDir + "settingSave", {
+      encoding: 'utf-8'
+    }, function(err, data) {
+      if (err) {
+        return console.log(err);
+      }
+      socket.emit("readDataSend", data);
+    });
+  });
 });
