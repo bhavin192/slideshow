@@ -4,23 +4,26 @@
 <head>
   <meta charset="utf-8">
   <title>Slideshow</title>
-
-  <script src="jquery-1.12.4.js"></script>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />  <script src="jquery-1.12.4.js"></script>
   <script src="jquery-ui.js"></script>
   <script src="http://localhost:8000/socket.io/socket.io.js"></script>
   <script>
     $(document).ready(function() {
       var socket = io.connect("http://localhost:8000");
-      var defaultDelay = 3000; //3sec
+      var defaultDelay = 3; //sec
       var nextEq = 0;
       var slideTimer;
-      var slideTimer2;
       var activeId = "";
       var zoomCount = 0;
       var setTimeoutFunc1;
       var zoomCount = 0;
       var viewPic = 1; //false
-
+      var mouseOver = 1; //false
+      var timerInc;
+      var timerInc2;
+      var timerDec;
+      var timerDec2;
+      var mouseD = 1;
       $("#sortable").sortable();
       $("#sortable .newDiv").draggable();
 
@@ -29,12 +32,14 @@
       socket.on("slideData", function(data) {
         uri_uriKey = data.dataImg;
         uri_dir = data.dir;
+        defaultDelay = data.delay;
 
         function newDivFunction(item, index) {
           var newImgPath = item.uri;
           var newDiv = document.createElement("div");
           newDiv.setAttribute("style", "background-image: url(" + data.dir + newImgPath + ")");
           newDiv.setAttribute("id", item.uriKey);
+          newDiv.setAttribute("data-delay", defaultDelay);
           newDiv.className = "newDiv ui-widget-content";
           document.getElementById("sortable").appendChild(newDiv);
         } //newDivFunction
@@ -68,16 +73,20 @@
           }
         }
 
-        function slideShow() {
-          nextEq += 1;
-
-          if (nextEq > $("#sortable div").last().index()) {
-            nextEq = 0;
-          }
-          $("#sortable .newDiv").fadeTo(250, 0);
-          $("#sortable .newDiv").hide();
-          $("#sortable .newDiv").eq(nextEq).fadeTo(500, 1.0);
-        }
+        function slideShow(nextEq) {
+          slideTimer = setTimeout(function() {
+            defaultDelay = $("#sortable .newDiv").eq(nextEq).attr("data-delay");
+            if (nextEq > $("#sortable div").last().index()) {
+              nextEq = -1;
+            }
+            //          nextEq = nextE;
+            $("#sortable .newDiv").fadeTo(250, 0);
+            $("#sortable .newDiv").hide();
+            $("#sortable .newDiv").eq(nextEq).fadeTo(500, 1.0);
+            nextEq += 1;
+            slideShow(nextEq);
+          }, defaultDelay * 1000);
+        }; //slideShow();        
 
         $(document).on("click", "#play", function() {
           $("#sortable .newDiv").hide();
@@ -92,13 +101,14 @@
           });
           jQuery("#play").attr("src", "icons/icons-pause.png");
           jQuery("#play").attr("id", "pause");
-          slideTimer = setInterval(slideShow, defaultDelay);
-          $("#sortable .newDiv").eq(nextEq).fadeTo(500, 1.0);
+          defaultDelay = $("#sortable .newDiv").eq(nextEq).attr("data-delay");
+          defaultDelay = 0;
+          slideShow(nextEq);
         }); //play
 
         $(document).on("click", "#pause", function() {
-          clearInterval(slideTimer);
-          clearInterval(slideTimer2);
+          clearTimeout(slideTimer);
+          defaultDelay = 0;
           viewPic = 0; //true
           zoomCount = 0;
           jQuery(this).attr("id", "resume");
@@ -111,7 +121,6 @@
           $(".menuPic").hide();
           jQuery(this).attr("id", "pause");
           jQuery(this).attr("src", "icons/icons-pause.png");
-
           $("#sortable .newDiv").css({
             "width": "100%",
             "height": "100vh",
@@ -120,16 +129,16 @@
             "top": "0px",
             "margin": "0"
           });
-          slideTimer2 = setInterval(slideShow, defaultDelay);
+          defaultDelay = 0;
+          slideShow(nextEq);
         });
 
         $(document).on("click", "#stop", function() {
           viewPic = 1; //false
-          clearInterval(slideTimer);
-          clearInterval(slideTimer2);
+          clearTimeout(slideTimer);
+          defaultDelay = 0;
           $(".menuPic").hide();
           nextEq = 0;
-
           $("#sortable .newDiv").css({
             "width": "200px",
             "height": "200px",
@@ -143,14 +152,12 @@
           jQuery(".playClass").attr("src", "icons/icons-play.png");
           $("#sortable .newDiv").fadeTo(250, 0);
           $("#sortable .newDiv").fadeTo(500, 1.0);
-
         }); //stop
 
         $(document).on("click", ".newDiv", function() {
           nextEq = $(this).index();
           viewPic = 0;
           zoomCount = 0;
-
           if ($(this).is(":first-child")) {
             $("#prevPic").css("opacity", "0.5");
           } else {
@@ -170,14 +177,15 @@
             "top": "0px",
             "margin": "0"
           });
-
           activeId = $("#sortable .newDiv").eq(nextEq).attr("id");
+          setDelay = $(this).attr("data-delay");
+          $("#delayCountTxt").val(setDelay);
           $("#sortable .newDiv").fadeTo(250, 0);
           $("#sortable .newDiv").hide();
           $("#" + activeId).fadeTo(500, 1.0);
           $(".menuPic").show();
-          clearInterval(slideTimer);
-          clearInterval(slideTimer2);
+          clearTimeout(slideTimer);
+          defaultDelay = 0;
           jQuery(".playClass").attr("id", "resume");
           jQuery(".playClass").attr("src", "icons/icons-play.png");
         }); //newDiv
@@ -219,10 +227,12 @@
             }
           }
         });
+
         $(document).on("click", "#zoomNormal", function() {
           $("#" + activeId).trigger("click");
           zoomCount = 0;
         });
+
         $(document).on("click", "#zoomOut", function() {
           if (zoomCount > -7) {
             zoomCount += -1;
@@ -260,13 +270,15 @@
             }
           }
         });
-        $(document).on("click", "#nextPic", function() {
 
+        $(document).on("click", "#nextPic", function() {
           $("#" + activeId).next().trigger("click");
         });
+
         $(document).on("click", "#prevPic", function() {
           $("#" + activeId).prev().trigger("click");
         });
+
         $(document).on("mousemove", function() {
           clearTimeout(setTimeoutFunc1);
           $("#menu").fadeIn(500);
@@ -276,6 +288,7 @@
             }, 5000);
           }
         });
+
         $("#menu").on("mouseover", function() {
           mouseOver = 0;
           clearTimeout(setTimeoutFunc1);
@@ -288,16 +301,65 @@
         $(document).on("click", "#full", function() {
           toggleFullScreen();
         }); //full
-      }); //io
+
+        $(document).on("mouseup", "#addCount", function() {
+          clearInterval(timerInc);
+          mouseD = 1;
+        });
+        $(document).on("mouseup", "#minusCount", function() {
+          clearInterval(timerDec);
+          mouseD = 1;
+        });
+
+        $(document).on("change paste keyup mouseup", "#delayCountTxt, #minusCount, #addCount", function() {
+          $("#sortable .newDiv").eq(nextEq).attr("data-delay", ($('#delayCountTxt').val()));
+        });
+
+        $(document).on("mousedown", "#addCount", function() {
+          mouseD = 0;
+          //increment();
+          clearInterval(timerInc);
+          document.querySelector("#delayCountTxt").stepUp();
+          timerInc = setInterval(function() {
+            clearInterval(timerInc2);
+            timerInc2 = setInterval(function() {
+              if (mouseD == 0) {
+                document.querySelector("#delayCountTxt").stepUp();
+              } else {
+                clearInterval(timerInc2);
+              }
+            }, 100);
+          }, 250);
+        });
+
+        $(document).on("mousedown", "#minusCount", function() {
+          mouseD = 0;
+          //increment();
+          clearInterval(timerDec);
+          document.querySelector("#delayCountTxt").stepDown();
+          timerDec = setInterval(function() {
+            clearInterval(timerDec2);
+            timerDec2 = setInterval(function() {
+              if (mouseD == 0) {
+                document.querySelector("#delayCountTxt").stepDown();
+              } else {
+                clearInterval(timerDec2);
+              }
+            }, 100);
+          }, 250);
+        });
+      }); //on
     }); //ready
   </script>
-
 
   <style>
     html,
     body {
       margin: 0;
       background-color: #000;
+      font-size: 16px;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #39f;
     }
 
     body::-webkit-scrollbar {
@@ -307,7 +369,6 @@
       color: #3399ff;
       border: 1px solid #3399ff;
       border-radius: 10px;
-
     }
 
     body::-webkit-scrollbar-thumb {
@@ -316,7 +377,6 @@
       color: #3399ff;
       opacity: 0.5;
       min-height: 30px;
-
     }
 
     ::-webkit-scrollbar-thumb:active {
@@ -357,20 +417,58 @@
       background: rgba(0, 0, 0, 0.6);
       width: 100%;
       height: 64px;
-
     }
-
 
     .menuMain {
       display: inline;
+      float: left;
     }
 
     .menuPic {
       display: none;
+      float: left;
+    }
+
+    #delayCountWrap {
+      float: left;
+    }
+
+    .delayCount {
+      float: left;
+      height: 32px;
+      border: 1px solid #39f;
+      border-radius: 3px;
+      margin: 1px;
+    }
+
+    #delayCountLabel {
+      text-align: center;
+      height: 24px;
+      font-size: 1.25em;
+      border: 1px solid #39f;
+      border-radius: 3px;
+      margin: 1px;
+    }
+
+    #delayCountTxt {
+      text-align: center;
+      height: 26px;
+      font-size: 1.25em;
     }
 
     #full {
       float: right;
+    }
+
+    input[type="number"] {
+      -webkit-appearance: textfield;
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
     }
   </style>
 </head>
@@ -384,6 +482,16 @@
     <img id="zoomOut" class="menuPic" title="zoom out" src="icons/icons-zoom-out.png" />
     <img id="prevPic" class="menuPic" title="prev pic" src="icons/icons-prev.png" />
     <img id="nextPic" class="menuPic" title="next pic" src="icons/icons-next.png" />
+    <div id="delayCountWrap" class="menuPic">
+      <div id="delayCountLabel">
+        <font>Delay(sec)</font>
+      </div>
+      <div id="delayCount">
+        <div class="delayCount"><img id="addCount" src="icons/icons-add.png" /></div>
+        <div class="delayCount"><input id="delayCountTxt" type="number" min="1" max="60000" name="counter" size="4" value="3" /></div>
+        <div class="delayCount"><img id="minusCount" src="icons/icons-minus.png" /></div>
+      </div>
+    </div>
     <img id="full" title="fullscreen" src="icons/icons-fullscreen.png" />
   </div>
   <div id="sortable">
