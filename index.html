@@ -25,6 +25,7 @@
       var timerDec;
       var timerDec2;
       var mouseD = 1;
+    
       $("#sortable").sortable();
       $("#sortable .newDiv").draggable();
       $("#sortable").disableSelection();
@@ -283,17 +284,19 @@
           $("#menu").fadeIn(500);
           if (mouseOver == 1) {
             setTimeoutFunc1 = setTimeout(function() {
-              $("#menu").hide();
-            }, 5000);
+              $("#menu").fadeOut(500);
+              $("#drop").fadeOut(500);
+            }, 1500);
           }
         });
 
-        $("#menu").on("mouseover", function() {
+        $("#menu, #drop").on("mouseover", function() {
           mouseOver = 0;
           clearTimeout(setTimeoutFunc1);
           $("#menu").fadeIn(500);
         });
-        $("#menu").on("mouseout", function() {
+
+        $("#menu, #drop").on("mouseout", function() {
           mouseOver = 1;
         });
 
@@ -306,14 +309,72 @@
         });
 
         socket.on("readDataSend", function(data) {
-          $('#sortable').html(data);
+          $("#sortable").html(data);
+          $("#centreTxt").html("Settings Loaded.");
+          $("#centre").fadeToggle("slow");
+          var divWidth = $("#centreTxt").width();
+          var divHeight = $("#centreTxt").height();
+          $("#centre").css({
+            "width": divWidth,
+            "height": divHeight,
+            "color": "#39f"
+          });
+          setTimeout(function() {
+            $("#centre").fadeToggle("slow");
+          }, 3000);
+        });
+
+        socket.on("errData", function(data) {
+          var errHtml = "";
+          if (data.code == "ENOENT") {
+            errHtml += "Settings file does not exist.<br>"
+          }
+          errHtml += "Error Code: " + data.code + "<br>file: " + data.path;
+          $("#centreTxt").html(errHtml);
+          $("#centre").fadeToggle("slow");
+          var divWidth = $("#centreTxt").width();
+          var divHeight = $("#centreTxt").height();
+          $("#centre").css({
+            "width": divWidth,
+            "height": divHeight,
+            "color": "red"
+          });
+          setTimeout(function() {
+            $("#centre").fadeToggle("slow");
+            $("#centre").css({
+              "color": "#39f"
+            });
+          }, 5000);
         });
 
         $(document).on("click", "#saveFile", function() {
-          var sortHtml = $('#sortable').html();
+          var sortHtml = $("#sortable").html();
           socket.emit("saveData", sortHtml);
         }); //save
 
+        socket.on("fileSaved", function(data) {
+          $("#centreTxt").html("Settings Saved.");
+
+          $("#centre").fadeToggle("slow");
+          var divWidth = $("#centreTxt").width();
+          var divHeight = $("#centreTxt").height();
+          $("#centre").css({
+            "width": divWidth,
+            "height": divHeight,
+            "color": "#39f"
+          });
+          setTimeout(function() {
+            $("#centre").fadeToggle("slow");
+          }, 3000);
+        });
+
+        $(document).on("click", "#logo", function() {
+          $("#drop").fadeToggle("slow");
+        });
+
+        $("button:first").click(function() {
+          $("p:first").fadeToggle("slow", "linear");
+        });
         $(document).on("mouseup", "#addCount", function() {
           clearInterval(timerInc);
           mouseD = 1;
@@ -428,6 +489,7 @@
       background: rgba(0, 0, 0, 0.6);
       width: 100%;
       height: 64px;
+      box-shadow: inset 0px 8px 8px rgba(255, 255, 255, .3), inset 0px -8px 8px rgba(0, 0, 0, .6);
     }
 
     .menuMain {
@@ -459,6 +521,7 @@
       border: 1px solid #39f;
       border-radius: 3px;
       margin: 1px;
+      box-shadow: inset 0px 8px 8px rgba(255, 255, 255, .3), inset 0px -8px 8px rgba(0, 0, 0, .6);
     }
 
     #delayCountTxt {
@@ -471,6 +534,19 @@
       float: right;
     }
 
+    #drop {
+      display: none;
+      //position: absolute;
+      width: 64px;
+      height: 128px;
+      position: fixed;
+      top: 64px;
+      left: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 100;
+
+    }
+
     input[type="number"] {
       -webkit-appearance: textfield;
       -moz-appearance: textfield;
@@ -481,33 +557,68 @@
     input[type=number]::-webkit-outer-spin-button {
       -webkit-appearance: none;
     }
+
+    .pointer {
+      cursor: pointer;
+    }
+
+    #centreTxt {
+      padding: 8px;
+      text-align: center;
+      white-space: nowrap;
+      font-size: 1.25em;
+    }
+
+    #centre {
+      display: none;
+      padding: 32px;
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      margin: auto;
+      z-index: 100;
+      position: absolute;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgb(51, 153, 255);
+      text-align: center;
+      box-shadow: inset 0px 8px 8px rgba(255, 255, 255, .3), inset 0px -8px 8px rgba(0, 0, 0, .6);
+    }
   </style>
 </head>
 
 <body>
   <div id="menu">
-    <img id="play" class="menuMain playClass" title="play" src="icons/icons-play.png" />
-    <img id="stop" class="menuMain" title="stop" src="icons/stop.png" />
-    <img id="zoomIn" class="menuPic" title="zoom in" src="icons/icons-zoom-in.png" />
-    <img id="zoomNormal" class="menuPic" title="zoom normal" src="icons/icons-zoom-normal.png" />
-    <img id="zoomOut" class="menuPic" title="zoom out" src="icons/icons-zoom-out.png" />
-    <img id="prevPic" class="menuPic" title="prev pic" src="icons/icons-prev.png" />
-    <img id="nextPic" class="menuPic" title="next pic" src="icons/icons-next.png" />
+    <img id="logo" class="menuMain pointer" title="settings" src="icons/icon-logo.png" />
+    <img id="play" class="menuMain playClass pointer" title="play" src="icons/icons-play.png" />
+    <img id="stop" class="menuMain pointer" title="stop" src="icons/stop.png" />
+    <img id="zoomIn" class="menuPic pointer" title="zoom in" src="icons/icons-zoom-in.png" />
+    <img id="zoomNormal" class="menuPic pointer" title="zoom normal" src="icons/icons-zoom-normal.png" />
+    <img id="zoomOut" class="menuPic  pointer" title="zoom out" src="icons/icons-zoom-out.png" />
+    <img id="prevPic" class="menuPic pointer" title="prev pic" src="icons/icons-prev.png" />
+    <img id="nextPic" class="menuPic pointer" title="next pic" src="icons/icons-next.png" />
     <div id="delayCountWrap" class="menuPic">
       <div id="delayCountLabel">
         <font>Delay(sec)</font>
       </div>
       <div id="delayCount">
-        <div class="delayCount"><img id="addCount" src="icons/icons-add.png" /></div>
+        <div class="delayCount pointer"><img id="addCount" src="icons/icons-add.png" /></div>
         <div class="delayCount"><input id="delayCountTxt" type="number" min="1" max="60000" name="counter" size="4" value="3" /></div>
-        <div class="delayCount"><img id="minusCount" src="icons/icons-minus.png" /></div>
+        <div class="delayCount pointer"><img id="minusCount" src="icons/icons-minus.png" /></div>
       </div>
     </div>
-    <img id="openFile" class="menuPic" title="open file" src="icons/icons-open.png" />
-    <img id="saveFile" class="menuPic" title="save file" src="icons/icons-save.png" />
-    <img id="full" title="fullscreen" src="icons/icons-fullscreen.png" />
+    <img id="full" class="pointer" title="fullscreen" src="icons/icons-fullscreen.png" />
   </div>
   <div id="sortable">
+  </div>
+  <div id="drop">
+    <img id="openFile" title="open file" src="icons/icons-open.png" />
+    <img id="saveFile" title="save file" src="icons/icons-save.png" />
+  </div>
+  <div id="centre"><b>
+  <span id="centreTxt">
+  </span></b>
   </div>
 
 </body>

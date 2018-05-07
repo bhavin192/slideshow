@@ -1,5 +1,9 @@
-# Slideshow (alpha development phase, testing on Fedora 27 (tm) && Windows 7 (tm)).
+# Slideshow (beta development phase, testing on Fedora 27 (tm) && Windows 7 (tm)).
 Slideshow and individual image viewer, with sortable and zoom facility.
+
+## Intro
+
+As simple as paste images into a directory, start node script, open index.html in browser, and drag sortable thumbnails are displayed. Click play for slideshow, pause to view image, zoom in or out and change delay time. Save settings for each folder.
 
 ## Config
 
@@ -65,7 +69,6 @@ To view indvidual images, click on thumb or on image while playing or pause icon
 Click play icon to resume.
 
 Click stop icon to return to sortable thumbs.
-		
-## Todo
 
-Save customise delay and sort order. 
+To save or open saved delay and sequence settings, click settings icon on far left.
+

@@ -33,13 +33,13 @@ io.sockets.on('connection', function(socket) {
     "dir": slidesDir,
     "delayGlobal": defaultDelay
   });
-  
+
   socket.on("saveData", function(data) {
     fs.writeFile(slidesDir + "settingSave", data, function(err) {
       if (err) {
         return console.log(err);
       }
-      console.log("The file was saved!");
+      socket.emit("fileSaved");
     });
   });
 
@@ -48,6 +48,7 @@ io.sockets.on('connection', function(socket) {
       encoding: 'utf-8'
     }, function(err, data) {
       if (err) {
+        socket.emit("errData", err)
         return console.log(err);
       }
       socket.emit("readDataSend", data);
