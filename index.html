@@ -392,12 +392,12 @@
         $(document).on("mousedown", "#addCount", function() {
           mouseD = 0;
           clearInterval(timerInc);
-          document.querySelector("#delayCountTxt").stepUp();
+                document.getElementById("delayCountTxt").stepUp(1);
           timerInc = setInterval(function() {
             clearInterval(timerInc2);
             timerInc2 = setInterval(function() {
               if (mouseD == 0) {
-                document.querySelector("#delayCountTxt").stepUp();
+                document.getElementById("delayCountTxt").stepUp(1);
               } else {
                 clearInterval(timerInc2);
               }
@@ -408,12 +408,12 @@
         $(document).on("mousedown", "#minusCount", function() {
           mouseD = 0;
           clearInterval(timerDec);
-          document.querySelector("#delayCountTxt").stepDown();
+          document.getElementById("delayCountTxt").stepDown(1);
           timerDec = setInterval(function() {
             clearInterval(timerDec2);
             timerDec2 = setInterval(function() {
               if (mouseD == 0) {
-                document.querySelector("#delayCountTxt").stepDown();
+                document.getElementById("delayCountTxt").stepDown(1);
               } else {
                 clearInterval(timerDec2);
               }
