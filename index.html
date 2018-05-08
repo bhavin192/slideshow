@@ -28,12 +28,12 @@
       var mouseD = 1;
       var reSizeDelay = 1;
       var inputFocus = 1;
-    
+
       $("#sortable").sortable();
       $("#sortable .newDiv").draggable();
       $("#sortable").disableSelection();
       socket.on("slideData", function(data) {
-		$("#sortable").html("");
+        $("#sortable").html("");
         uri_uriKey = data.dataImg;
         uri_dir = data.dir;
         defaultDelay = data.delayGlobal;
@@ -56,7 +56,7 @@
             if (document.documentElement.requestFullscreen) {
               document.documentElement.requestFullscreen();
             } else if (document.documentElement.msRequestFullscreen) {
-              document.documentElement.msRequestFullscreen();
+              document.body.msRequestFullscreen();
             } else if (document.documentElement.mozRequestFullScreen) {
               document.documentElement.mozRequestFullScreen();
             } else if (document.documentElement.webkitRequestFullscreen) {
@@ -217,7 +217,7 @@
           jQuery(".playClass").attr("id", "resume");
           jQuery(".playClass").attr("src", "icons/icons-play.png");
         }); //newDiv
-        
+
         $(document).on("click", "#zoomIn", function() {
           if (zoomCount < 7) {
             zoomCount += 1;
@@ -255,12 +255,12 @@
             }
           }
         });
-        
+
         $(document).on("click", "#zoomNormal", function() {
           $("#" + activeId).trigger("click");
           zoomCount = 0;
         });
-        
+
         $(document).on("click", "#zoomOut", function() {
           if (zoomCount > -7) {
             zoomCount += -1;
@@ -298,14 +298,14 @@
             }
           }
         });
-        
+
         $(document).on("click", "#nextPic", function() {
           $("#" + activeId).next().trigger("click");
         });
         $(document).on("click", "#prevPic", function() {
           $("#" + activeId).prev().trigger("click");
         });
-        
+
         $(document).on("mousemove", function() {
           clearTimeout(setTimeoutFunc1);
           $("#menu").fadeIn(500);
@@ -316,17 +316,17 @@
             }, 1500);
           }
         });
-        
+
         $("#menu, #drop").on("mouseover", function() {
           mouseOver = 0;
           clearTimeout(setTimeoutFunc1);
           $("#menu").fadeIn(500);
         });
-        
+
         $("#menu, #drop").on("mouseout", function() {
           mouseOver = 1;
         });
-        
+
         $(document).on("click", "#full", function() {
           reSizeDelay = 0;
           toggleFullScreen();
@@ -334,7 +334,7 @@
             reSizeDelay = 1;
           }, 1000);
         }); //full
-        
+
         $(document).on("click", "#openFile", function() {
           socket.emit("readData");
         });
@@ -353,7 +353,7 @@
             $("#centre").fadeToggle("slow");
           }, 3000);
         });
-        
+
         socket.on("errData", function(data) {
           var errHtml = "";
           if (data.code == "ENOENT") {
@@ -376,12 +376,12 @@
             });
           }, 5000);
         });
-        
+
         $(document).on("click", "#saveFile", function() {
           var sortHtml = $("#sortable").html();
           socket.emit("saveData", sortHtml);
         }); //save
-        
+
         socket.on("fileSaved", function(data) {
           $("#centreTxt").html("Settings Saved.");
           $("#centre").fadeToggle("slow");
@@ -396,29 +396,38 @@
             $("#centre").fadeToggle("slow");
           }, 3000);
         });
-        
+
         $(document).on("click", "#logo", function() {
           $("#drop").fadeToggle("slow");
         });
-        
+
         $("button:first").click(function() {
           $("p:first").fadeToggle("slow", "linear");
         });
-        
+
         $(document).on("mouseup", "#addCount", function() {
           clearInterval(timerInc);
           mouseD = 1;
         });
-        
+
         $(document).on("mouseup", "#minusCount", function() {
           clearInterval(timerDec);
           mouseD = 1;
         });
-        
+
         $(document).on("change paste keyup mouseup", "#delayCountTxt, #minusCount, #addCount", function() {
-          $("#sortable .newDiv").eq(nextEq).attr("data-delay", ($('#delayCountTxt').val()));
+          var sVal = ($('#delayCountTxt').val());
+          var iNum = parseInt(sVal);
+          if (iNum > 6000) {
+            iNum = 6000
+          };
+          if (iNum < 0) {
+            iNum = 0
+          };
+          $('#delayCountTxt').val(iNum);
+          $("#sortable .newDiv").eq(nextEq).attr("data-delay", iNum);
         });
-        
+
         $(document).on("focus change paste keyup mouseup", "#delayCountTxt", function() {
           mouseOver = 0;
           inputFocus = 0;
@@ -433,20 +442,21 @@
             $("#drop").fadeOut(500);
           }, 8000);
         });
-                
+
         $(document).on("mousedown", "#addCount", function() {
           mouseD = 0;
           clearInterval(timerInc);
           var sVal = ($('#delayCountTxt').val());
           var iNum = parseInt(sVal);
-          if (iNum > 0 && iNum < 6000) {
+
+          if (iNum >= 0 && iNum <= 6000) {
             iNum += 1;
             ($('#delayCountTxt').val(iNum));
           }
           timerInc = setInterval(function() {
             clearInterval(timerInc2);
             timerInc2 = setInterval(function() {
-              if (mouseD == 0 && iNum > 0 && iNum < 6000) {
+              if (mouseD == 0 && iNum >= 0 && iNum <= 6000) {
                 iNum += 1;
                 ($('#delayCountTxt').val(iNum));
               } else {
@@ -455,20 +465,20 @@
             }, 100);
           }, 250);
         });
-        
+
         $(document).on("mousedown", "#minusCount", function() {
           mouseD = 0;
           clearInterval(timerDec);
           var sVal = ($('#delayCountTxt').val());
           var iNum = parseInt(sVal);
-          if (iNum > 0 && iNum < 6000) {
+          if (iNum > 0 && iNum <= 6000) {
             iNum -= 1;
             ($('#delayCountTxt').val(iNum));
           }
           timerDec = setInterval(function() {
             clearInterval(timerDec2);
             timerDec2 = setInterval(function() {
-              if (mouseD == 0 && iNum > 0 && iNum < 6000) {
+              if (mouseD == 0 && iNum > 0 && iNum <= 6000) {
                 iNum -= 1;
                 ($('#delayCountTxt').val(iNum));
               } else {
@@ -513,6 +523,10 @@
       border-radius: 10px;
       color: #3399ff;
       opacity: 1;
+    }
+
+    :-ms-fullscreen {
+      overflow: auto
     }
 
     #sortable {
