@@ -17,6 +17,7 @@
       var activeId = "";
       var zoomCount = 0;
       var setTimeoutFunc1;
+      var setTimeoutFunc2;
       var zoomCount = 0;
       var viewPic = 1; //false
       var mouseOver = 1; //false
@@ -25,11 +26,12 @@
       var timerDec;
       var timerDec2;
       var mouseD = 1;
+      var reSizeDelay = 1;
+      var inputFocus = 1;
     
       $("#sortable").sortable();
       $("#sortable .newDiv").draggable();
       $("#sortable").disableSelection();
-
       socket.on("slideData", function(data) {
         uri_uriKey = data.dataImg;
         uri_dir = data.dir;
@@ -74,6 +76,21 @@
           }
         }
 
+        function reSize() {
+          if ((screen.availHeight || screen.height - 30) <= window.innerHeight) {
+            $("#full").attr("src", "icons/icons-fullscreen-exit.png");
+            $("#full").attr("title", "fullscreen exit");
+          } else {
+            $("#full").attr("src", "icons/icons-fullscreen.png");
+            $("#full").attr("title", "fullscreen");
+          }
+        };
+        $(window).resize(function() {
+          if (reSizeDelay == 1) {
+            reSize();
+          }
+        });
+
         function slideShow(nextEq) {
           slideTimer = setTimeout(function() {
             defaultDelay = $("#sortable .newDiv").eq(nextEq).attr("data-delay");
@@ -87,7 +104,6 @@
             slideShow(nextEq);
           }, defaultDelay * 1000);
         }; //slideShow();        
-
         $(document).on("click", "#play", function() {
           $("#sortable .newDiv").hide();
           $(".menuPic").hide();
@@ -97,15 +113,19 @@
             "position": "absolute",
             "left": "0px",
             "top": "0px",
+            "cursor": "pointer",
             "margin": "0"
           });
+          $("#sortable").css({
+            "top": "0px"
+          });
+
           jQuery("#play").attr("src", "icons/icons-pause.png");
           jQuery("#play").attr("id", "pause");
           defaultDelay = $("#sortable .newDiv").eq(nextEq).attr("data-delay");
           defaultDelay = 0;
           slideShow(nextEq);
         }); //play
-
         $(document).on("click", "#pause", function() {
           clearTimeout(slideTimer);
           defaultDelay = 0;
@@ -116,7 +136,6 @@
           $(".menuPic").show();
           activeId = $("#sortable .newDiv").eq(nextEq).attr("id");
         }); //pause
-
         $(document).on("click", "#resume", function() {
           $(".menuPic").hide();
           jQuery(this).attr("id", "pause");
@@ -127,12 +146,12 @@
             "position": "absolute",
             "left": "0px",
             "top": "0px",
-            "margin": "0"
+            "margin": "0",
+            "cursor": "pointer"
           });
           defaultDelay = 0;
           slideShow(nextEq);
         });
-
         $(document).on("click", "#stop", function() {
           viewPic = 1; //false
           clearTimeout(slideTimer);
@@ -146,14 +165,18 @@
             "left": "0px",
             "top": "0px",
             "margin": "1",
-            "display": "inline"
+            "display": "inline",
+            "cursor": "grab",
+            "cursor": "-webkit-grab"
+          });
+          $("#sortable").css({
+            "top": "64px"
           });
           jQuery(".playClass").attr("id", "play");
           jQuery(".playClass").attr("src", "icons/icons-play.png");
           $("#sortable .newDiv").fadeTo(250, 0);
           $("#sortable .newDiv").fadeTo(500, 1.0);
         }); //stop
-
         $(document).on("click", ".newDiv", function() {
           nextEq = $(this).index();
           viewPic = 0;
@@ -175,7 +198,11 @@
             "position": "absolute",
             "left": "0px",
             "top": "0px",
-            "margin": "0"
+            "margin": "0",
+            "cursor": "pointer",
+          });
+          $("#sortable").css({
+            "top": "0px"
           });
           activeId = $("#sortable .newDiv").eq(nextEq).attr("id");
           setDelay = $(this).attr("data-delay");
@@ -189,7 +216,7 @@
           jQuery(".playClass").attr("id", "resume");
           jQuery(".playClass").attr("src", "icons/icons-play.png");
         }); //newDiv
-
+        
         $(document).on("click", "#zoomIn", function() {
           if (zoomCount < 7) {
             zoomCount += 1;
@@ -227,12 +254,12 @@
             }
           }
         });
-
+        
         $(document).on("click", "#zoomNormal", function() {
           $("#" + activeId).trigger("click");
           zoomCount = 0;
         });
-
+        
         $(document).on("click", "#zoomOut", function() {
           if (zoomCount > -7) {
             zoomCount += -1;
@@ -270,44 +297,46 @@
             }
           }
         });
-
+        
         $(document).on("click", "#nextPic", function() {
           $("#" + activeId).next().trigger("click");
         });
-
         $(document).on("click", "#prevPic", function() {
           $("#" + activeId).prev().trigger("click");
         });
-
+        
         $(document).on("mousemove", function() {
           clearTimeout(setTimeoutFunc1);
           $("#menu").fadeIn(500);
-          if (mouseOver == 1) {
+          if (mouseOver == 1 && inputFocus == 1) {
             setTimeoutFunc1 = setTimeout(function() {
               $("#menu").fadeOut(500);
               $("#drop").fadeOut(500);
             }, 1500);
           }
         });
-
+        
         $("#menu, #drop").on("mouseover", function() {
           mouseOver = 0;
           clearTimeout(setTimeoutFunc1);
           $("#menu").fadeIn(500);
         });
-
+        
         $("#menu, #drop").on("mouseout", function() {
           mouseOver = 1;
         });
-
+        
         $(document).on("click", "#full", function() {
+          reSizeDelay = 0;
           toggleFullScreen();
+          setTimeoutFunc3 = setTimeout(function() {
+            reSizeDelay = 1;
+          }, 1000);
         }); //full
-
+        
         $(document).on("click", "#openFile", function() {
           socket.emit("readData");
         });
-
         socket.on("readDataSend", function(data) {
           $("#sortable").html(data);
           $("#centreTxt").html("Settings Loaded.");
@@ -323,7 +352,7 @@
             $("#centre").fadeToggle("slow");
           }, 3000);
         });
-
+        
         socket.on("errData", function(data) {
           var errHtml = "";
           if (data.code == "ENOENT") {
@@ -346,15 +375,14 @@
             });
           }, 5000);
         });
-
+        
         $(document).on("click", "#saveFile", function() {
           var sortHtml = $("#sortable").html();
           socket.emit("saveData", sortHtml);
         }); //save
-
+        
         socket.on("fileSaved", function(data) {
           $("#centreTxt").html("Settings Saved.");
-
           $("#centre").fadeToggle("slow");
           var divWidth = $("#centreTxt").width();
           var divHeight = $("#centreTxt").height();
@@ -367,53 +395,81 @@
             $("#centre").fadeToggle("slow");
           }, 3000);
         });
-
+        
         $(document).on("click", "#logo", function() {
           $("#drop").fadeToggle("slow");
         });
-
+        
         $("button:first").click(function() {
           $("p:first").fadeToggle("slow", "linear");
         });
+        
         $(document).on("mouseup", "#addCount", function() {
           clearInterval(timerInc);
           mouseD = 1;
         });
-
+        
         $(document).on("mouseup", "#minusCount", function() {
           clearInterval(timerDec);
           mouseD = 1;
         });
-
+        
         $(document).on("change paste keyup mouseup", "#delayCountTxt, #minusCount, #addCount", function() {
           $("#sortable .newDiv").eq(nextEq).attr("data-delay", ($('#delayCountTxt').val()));
         });
-
+        
+        $(document).on("focus change paste keyup mouseup", "#delayCountTxt", function() {
+          mouseOver = 0;
+          inputFocus = 0;
+          clearTimeout(setTimeoutFunc1);
+          clearTimeout(setTimeoutFunc2);
+          $("#menu").show();
+          setTimeoutFunc2 = setTimeout(function() {
+            mouseOver = 1;
+            inputFocus = 1;
+            $("#delayCountTxt").blur();
+            $("#menu").fadeOut(500);
+            $("#drop").fadeOut(500);
+          }, 8000);
+        });
+                
         $(document).on("mousedown", "#addCount", function() {
           mouseD = 0;
           clearInterval(timerInc);
-                document.getElementById("delayCountTxt").stepUp(1);
+          var sVal = ($('#delayCountTxt').val());
+          var iNum = parseInt(sVal);
+          if (iNum > 0 && iNum < 6000) {
+            iNum += 1;
+            ($('#delayCountTxt').val(iNum));
+          }
           timerInc = setInterval(function() {
             clearInterval(timerInc2);
             timerInc2 = setInterval(function() {
-              if (mouseD == 0) {
-                document.getElementById("delayCountTxt").stepUp(1);
+              if (mouseD == 0 && iNum > 0 && iNum < 6000) {
+                iNum += 1;
+                ($('#delayCountTxt').val(iNum));
               } else {
                 clearInterval(timerInc2);
               }
             }, 100);
           }, 250);
         });
-
+        
         $(document).on("mousedown", "#minusCount", function() {
           mouseD = 0;
           clearInterval(timerDec);
-          document.getElementById("delayCountTxt").stepDown(1);
+          var sVal = ($('#delayCountTxt').val());
+          var iNum = parseInt(sVal);
+          if (iNum > 0 && iNum < 6000) {
+            iNum -= 1;
+            ($('#delayCountTxt').val(iNum));
+          }
           timerDec = setInterval(function() {
             clearInterval(timerDec2);
             timerDec2 = setInterval(function() {
-              if (mouseD == 0) {
-                document.getElementById("delayCountTxt").stepDown(1);
+              if (mouseD == 0 && iNum > 0 && iNum < 6000) {
+                iNum -= 1;
+                ($('#delayCountTxt').val(iNum));
               } else {
                 clearInterval(timerDec2);
               }
@@ -462,7 +518,7 @@
       width: 100%;
       visibility: visible;
       position: absolute;
-      top: 0;
+      top: 64px;
       z-index: 10;
       background-color: #000;
       margin: 0;
@@ -479,6 +535,8 @@
       float: left;
       margin: 1px;
       box-shadow: 0px 0px 1px #39f;
+      cursor: -webkit-grab;
+      cursor: grab;
     }
 
     #menu {
@@ -535,8 +593,7 @@
     }
 
     #drop {
-      display: none;
-      //position: absolute;
+      display: none; //position: absolute;
       width: 64px;
       height: 128px;
       position: fixed;
@@ -551,6 +608,7 @@
       -webkit-appearance: textfield;
       -moz-appearance: textfield;
       appearance: textfield;
+      width: 88px;
     }
 
     input[type=number]::-webkit-inner-spin-button,
@@ -613,8 +671,8 @@
   <div id="sortable">
   </div>
   <div id="drop">
-    <img id="openFile" title="open file" src="icons/icons-open.png" />
-    <img id="saveFile" title="save file" src="icons/icons-save.png" />
+    <img id="openFile" class="pointer" title="open file" src="icons/icons-open.png" />
+    <img id="saveFile" class="pointer" title="save file" src="icons/icons-save.png" />
   </div>
   <div id="centre"><b>
   <span id="centreTxt">
