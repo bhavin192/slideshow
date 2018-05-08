@@ -33,6 +33,7 @@
       $("#sortable .newDiv").draggable();
       $("#sortable").disableSelection();
       socket.on("slideData", function(data) {
+		$("#sortable").html("");
         uri_uriKey = data.dataImg;
         uri_dir = data.dir;
         defaultDelay = data.delayGlobal;
@@ -515,7 +516,8 @@
     }
 
     #sortable {
-      width: 100%;
+      width: vw;
+      height: vh;
       visibility: visible;
       position: absolute;
       top: 64px;
