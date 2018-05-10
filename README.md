@@ -15,7 +15,7 @@ or download and unzip:
 ```sh
 https://github.com/pixelsplurge/slideshow/archive/master.zip
 ```
-navagate to location of app directory eg:
+navigate to location of app directory eg:
 ```sh
 cd /home/user/slideshow/
 ```
