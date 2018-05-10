@@ -21,7 +21,7 @@ cd /home/user/slideshow/
 ```
 Windows eg:
 ```sh
-cd C:\Users\User 1\slideshow\
+cd C:\Users\User1\slideshow\
 ```
 to install dependencies, run:
 ```sh
